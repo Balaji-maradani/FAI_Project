@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Othello — The Turning Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="table-surface">
+
+  <!-- ============ HEADER ============ -->
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="crest" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="34" height="34">
+          <circle cx="20" cy="20" r="18" fill="none" stroke="var(--brass)" stroke-width="1.5"/>
+          <circle cx="14" cy="20" r="7" fill="#161616"/>
+          <circle cx="26" cy="20" r="7" fill="#f5f0e6"/>
+        </svg>
+      </div>
+      <div class="masthead-text">
+        <h1>Othello</h1>
+        <p class="subtitle">a game of quiet reversals</p>
+      </div>
+      <button id="sound-toggle" class="icon-btn" aria-label="Toggle sound" title="Toggle sound">
+        <span class="sound-on">&#128266;</span>
+        <span class="sound-off" hidden>&#128263;</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ MAIN LAYOUT ============ -->
+  <main class="layout">
+
+    <!-- LEFT / BOARD COLUMN -->
+    <section class="board-column">
+
+      <div class="status-strip">
+        <div class="turn-indicator" id="turn-indicator">
+          <span class="turn-dot" id="turn-dot"></span>
+          <span id="turn-text">Black to move</span>
+        </div>
+        <div class="thinking-indicator" id="thinking-indicator" hidden>
+          <span class="think-dots"><i></i><i></i><i></i></span>
+          Computer is thinking
+        </div>
+      </div>
+
+      <div class="board-frame">
+        <div class="board-frame-inner">
+          <div id="board" class="board" role="grid" aria-label="Othello board"></div>
+        </div>
+        <!-- coordinate labels -->
+        <div class="col-labels" aria-hidden="true">
+          <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+        </div>
+        <div class="row-labels" aria-hidden="true">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <button id="new-game-btn" class="btn btn-primary">New Game</button>
+        <button id="restart-btn" class="btn">Restart</button>
+        <button id="undo-btn" class="btn">Undo</button>
+      </div>
+    </section>
+
+    <!-- RIGHT / SIDE PANEL -->
+    <aside class="side-panel">
+
+      <div class="panel-card score-card">
+        <div class="score-block" id="score-black">
+          <div class="score-piece piece-black"></div>
+          <div class="score-meta">
+            <span class="score-label">Black</span>
+            <span class="score-value" id="black-score">2</span>
+          </div>
+        </div>
+        <div class="score-divider">
+          <span>vs</span>
+        </div>
+        <div class="score-block" id="score-white">
+          <div class="score-piece piece-white"></div>
+          <div class="score-meta">
+            <span class="score-label">White</span>
+            <span class="score-value" id="white-score">2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h2 class="panel-title">Setup</h2>
+
+        <div class="field">
+          <label>Game mode</label>
+          <div class="segmented" id="mode-select">
+            <button class="segment active" data-mode="pvc">Player vs Computer</button>
+            <button class="segment" data-mode="pvp">Player vs Player</button>
+          </div>
+        </div>
+
+        <div class="field" id="color-field">
+          <label>Play as</label>
+          <div class="segmented" id="color-select">
+            <button class="segment active" data-color="1">Black</button>
+            <button class="segment" data-color="2">White</button>
+          </div>
+        </div>
+
+        <div class="field" id="difficulty-field">
+          <label>Difficulty</label>
+          <div class="segmented" id="difficulty-select">
+            <button class="segment" data-difficulty="easy">Easy</button>
+            <button class="segment active" data-difficulty="medium">Medium</button>
+            <button class="segment" data-difficulty="hard">Hard</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h2 class="panel-title">Statistics</h2>
+        <dl class="stat-list">
+          <div class="stat-row"><dt>Move</dt><dd id="stat-move">1</dd></div>
+          <div class="stat-row"><dt>Black valid moves</dt><dd id="stat-valid-black">4</dd></div>
+          <div class="stat-row"><dt>White valid moves</dt><dd id="stat-valid-white">0</dd></div>
+          <div class="stat-row"><dt>Black corners</dt><dd id="stat-corner-black">0</dd></div>
+          <div class="stat-row"><dt>White corners</dt><dd id="stat-corner-white">0</dd></div>
+        </dl>
+      </div>
+
+      <div class="panel-card log-card">
+        <h2 class="panel-title">Log</h2>
+        <div id="game-log" class="game-log" aria-live="polite"></div>
+      </div>
+
+    </aside>
+  </main>
+</div>
+
+<!-- ============ GAME OVER MODAL ============ -->
+<div id="game-over-modal" class="modal-overlay" hidden>
+  <div class="modal">
+    <div class="modal-piece" id="modal-piece"></div>
+    <h2 id="modal-title">Black wins</h2>
+    <p id="modal-subtitle" class="modal-subtitle">37 — 27</p>
+    <div class="modal-actions">
+      <button id="modal-new-game" class="btn btn-primary">Play again</button>
+      <button id="modal-close" class="btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TOAST (invalid move / pass notices) ============ -->
+<div id="toast" class="toast" hidden></div>
+
+<script src="ai.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
